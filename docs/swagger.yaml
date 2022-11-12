@@ -1,0 +1,219 @@
+definitions:
+  router.LoginInfo:
+    properties:
+      userId:
+        maxLength: 20
+        minLength: 6
+        type: string
+      userPassword:
+        maxLength: 20
+        minLength: 6
+        type: string
+    required:
+    - userId
+    - userPassword
+    type: object
+  router.RegisterInfo:
+    properties:
+      email:
+        type: string
+      sex:
+        enum:
+        - female
+        - male
+        - none
+        type: string
+      userId:
+        maxLength: 20
+        minLength: 6
+        type: string
+      userName:
+        maxLength: 20
+        minLength: 2
+        type: string
+      userPassword:
+        maxLength: 20
+        minLength: 6
+        type: string
+    required:
+    - email
+    - sex
+    - userId
+    - userName
+    - userPassword
+    type: object
+  router.ShortInfo:
+    properties:
+      leadUrl:
+        type: string
+    required:
+    - leadUrl
+    type: object
+info:
+  contact: {}
+  description: Gin swagger
+  title: Gin swagger
+  version: "1.0"
+paths:
+  /api/media/image:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 上傳圖片
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: 有效時間
+        in: formData
+        name: expirationTime
+        required: true
+        type: string
+      - description: 瀏覽密碼
+        in: formData
+        name: password
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: UploadImage
+      tags:
+      - Media
+  /api/short:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.ShortInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Short
+      tags:
+      - Short
+  /api/short/{short}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: short
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: GetShort
+      tags:
+      - Short
+  /api/user/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.LoginInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Login
+      tags:
+      - User
+  /api/user/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.RegisterInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Register
+      tags:
+      - User
+  /api/user/short/{page}/{limit}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: page
+        in: path
+        name: page
+        required: true
+        type: integer
+      - description: limit
+        in: path
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: ShortList
+      tags:
+      - User
+  /api/user/short/{shortId}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: shortId
+        in: path
+        name: shortId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: DeleteShort
+      tags:
+      - User
+swagger: "2.0"
