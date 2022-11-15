@@ -55,6 +55,32 @@ info:
   title: Gin swagger
   version: "1.0"
 paths:
+  /api/media/{short}:
+    get:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: short
+        in: path
+        name: short
+        required: true
+        type: string
+      - description: password
+        in: query
+        name: password
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: GetMedia
+      tags:
+      - Media
   /api/media/image:
     post:
       consumes:
@@ -86,6 +112,37 @@ paths:
       summary: UploadImage
       tags:
       - Media
+  /api/media/video:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        type: string
+      - description: 上傳影片
+        in: formData
+        name: video
+        required: true
+        type: file
+      - description: 有效時間
+        in: formData
+        name: expirationTime
+        required: true
+        type: string
+      - description: 瀏覽密碼
+        in: formData
+        name: password
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: UploadVideo
+      tags:
+      - Media
   /api/short:
     post:
       consumes:
@@ -114,7 +171,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: id
+      - description: short
         in: path
         name: short
         required: true

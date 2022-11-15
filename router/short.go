@@ -79,7 +79,7 @@ func Short(g *gin.Context) {
 // @Tags Short
 // @Accept  json
 // @produce json
-// @Param  short  path  string  true  "id"
+// @Param  short  path  string  true  "short"
 // @Success 200
 // @Router /api/short/{short} [get]
 func GetShort(g *gin.Context) {
