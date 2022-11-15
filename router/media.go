@@ -23,7 +23,7 @@ func NewMediaRouter(group *gin.RouterGroup) {
 	group.GET("/:short", GetMedia)
 }
 
-type UploadImageInfo struct {
+type UploadMediaInfo struct {
 	ExpirationTime int64  `validate:"required,gte=1,lte=86400"`
 	Password       string `validate:"max=10"`
 }
@@ -91,7 +91,7 @@ func UploadImage(g *gin.Context) {
 		return
 	}
 
-	info := &UploadImageInfo{
+	info := &UploadMediaInfo{
 		ExpirationTime: expirationTime,
 		Password:       g.PostForm("password"),
 	}
@@ -147,17 +147,17 @@ func UploadVideo(g *gin.Context) {
 		return
 	}
 
-	var buf *bytes.Buffer
+	var buf []byte
 	if file != nil {
-		b, err := fileHelper.ReadFile(file)
+		buf, err = fileHelper.ReadFile(file)
 		if err != nil {
 			httpHelper.SendError(g, http.StatusInternalServerError, model.ErrInternal.Error())
 			return
 		}
-		if len(b) == 0 {
+		if len(buf) == 0 {
 			return
 		}
-		if !fileHelper.IsVideo(http.DetectContentType(b)) {
+		if !fileHelper.IsVideo(http.DetectContentType(buf)) {
 			httpHelper.SendError(g, http.StatusBadRequest, "ErrInvalidFileType")
 			return
 		}
@@ -172,7 +172,7 @@ func UploadVideo(g *gin.Context) {
 		return
 	}
 
-	info := &UploadImageInfo{
+	info := &UploadMediaInfo{
 		ExpirationTime: expirationTime,
 		Password:       g.PostForm("password"),
 	}
@@ -187,7 +187,7 @@ func UploadVideo(g *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	data, err := media.MediaService.CreateMedia(ctx, objectId, "video", info.Password, info.ExpirationTime, buf.Bytes())
+	data, err := media.MediaService.CreateMedia(ctx, objectId, "video", info.Password, info.ExpirationTime, buf)
 	if err != nil {
 		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
 		return
