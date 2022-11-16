@@ -203,6 +203,57 @@ paths:
       summary: Login
       tags:
       - User
+  /api/user/media:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: page
+        in: path
+        name: page
+        required: true
+        type: integer
+      - description: limit
+        in: path
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: MediaList
+      tags:
+      - User
+  /api/user/media/{shortId}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: shortId
+        in: path
+        name: shortId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: DeleteMedia
+      tags:
+      - User
   /api/user/register:
     post:
       consumes:

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"privaTutle/model"
 	"privaTutle/pkg/auth"
+	"privaTutle/service/media"
 	"privaTutle/service/short"
 	"privaTutle/service/user"
 	"strconv"
@@ -19,8 +20,12 @@ import (
 func NewUserRouter(group *gin.RouterGroup) {
 	group.POST("/register", Register)
 	group.POST("/login", Login)
+
 	group.GET("/short/:page/:limit", ShortList)
 	group.DELETE("/short/:shortId", DeleteShort)
+
+	group.GET("/media/:page/:limit", MediaList)
+	group.DELETE("/media/:shortId", DeleteMedia)
 }
 
 type RegisterInfo struct {
@@ -169,13 +174,13 @@ func ShortList(g *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	data, err := short.ShortService.ListUserShorts(ctx, objectId, info.Page, info.Limit)
+	data, total, err := short.ShortService.ListUserShorts(ctx, objectId, info.Page, info.Limit)
 	if err != nil {
 		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	httpHelper.SendResponse(g, data)
+	httpHelper.SendResponse(g, gin.H{"data": data, "total": total})
 }
 
 type DeleteShortInfo struct {
@@ -217,6 +222,112 @@ func DeleteShort(g *gin.Context) {
 	defer cancel()
 
 	_, err = short.ShortService.UpdateShortStatus(ctx, objectId, info.ShortId, "delete")
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	httpHelper.SendResponse(g, nil)
+}
+
+type MediaListInfo struct {
+	Page  int64 `validate:"required,gte=1"`
+	Limit int64 `validate:"required,gte=1,lte=20"`
+}
+
+// @Summary MediaList
+// @Tags User
+// @Accept  json
+// @produce json
+// @Param  Authorization  header  string  true  "Authorization"
+// @Param  page  path  int64  true  "page"
+// @Param  limit  path  int64  true  "limit"
+// @Success 200
+// @Router /api/user/media/{page}/{limit} [get]
+func MediaList(g *gin.Context) {
+	token := g.Request.Header.Get("Authorization")
+	objectId, err := auth.AuthJWT(token)
+	if err != nil {
+		if err == auth.ErrVaild {
+			httpHelper.SendError(g, http.StatusUnauthorized, err.Error())
+			return
+		}
+		httpHelper.SendError(g, http.StatusInternalServerError, model.ErrInternal.Error())
+		return
+	}
+
+	page, err := strconv.ParseInt(g.Param("page"), 10, 64)
+	if err != nil {
+		httpHelper.SendError(g, http.StatusInternalServerError, model.ErrInternal.Error())
+		return
+	}
+	limit, err := strconv.ParseInt(g.Param("limit"), 10, 64)
+	if err != nil {
+		httpHelper.SendError(g, http.StatusInternalServerError, model.ErrInternal.Error())
+		return
+	}
+	info := MediaListInfo{
+		Page:  page,
+		Limit: limit,
+	}
+
+	validate := validator.New()
+	err = validate.Struct(info)
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, model.ErrParameter.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	data, total, err := media.MediaService.ListUserMedia(ctx, objectId, page, limit)
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
+	}
+
+	httpHelper.SendResponse(g, gin.H{"data": data, "total": total})
+}
+
+type DeleteMediaInfo struct {
+	ShortId string `validate:"required"`
+}
+
+// @Summary DeleteMedia
+// @Tags User
+// @Accept  json
+// @produce json
+// @Param  Authorization  header  string  true  "Authorization"
+// @Param  shortId  path  string  true  "shortId"
+// @Success 200
+// @Router /api/user/media/{shortId} [delete]
+func DeleteMedia(g *gin.Context) {
+	token := g.Request.Header.Get("Authorization")
+	objectId, err := auth.AuthJWT(token)
+	if err != nil {
+		if err == auth.ErrVaild {
+			httpHelper.SendError(g, http.StatusUnauthorized, err.Error())
+			return
+		}
+		httpHelper.SendError(g, http.StatusInternalServerError, model.ErrInternal.Error())
+		return
+	}
+
+	info := DeleteShortInfo{
+		ShortId: g.Param("shortId"),
+	}
+
+	validate := validator.New()
+	err = validate.Struct(info)
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, model.ErrParameter.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err = media.MediaService.UpdateMediaStatus(ctx, objectId, info.ShortId, "delete")
 	if err != nil {
 		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
 		return
