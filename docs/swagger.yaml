@@ -203,7 +203,7 @@ paths:
       summary: Login
       tags:
       - User
-  /api/user/media:
+  /api/user/media/{page}/{limit}:
     get:
       consumes:
       - application/json

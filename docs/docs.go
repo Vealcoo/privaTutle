@@ -244,7 +244,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/media": {
+        "/api/user/media/{page}/{limit}": {
             "get": {
                 "consumes": [
                     "application/json"
