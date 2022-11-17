@@ -11,6 +11,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/spf13/viper"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -56,6 +57,15 @@ func gcsConn() *storage.Client {
 	return gcsClient
 }
 
+func lineBotConn() *linebot.Client {
+	bot, err := linebot.New(cnf.GetString("line.secret"), cnf.GetString("line.accessToken"))
+	if err != nil {
+		panic(err)
+	}
+
+	return bot
+}
+
 func serviceBuild(database *mongo.Database, gcsClient *storage.Client) {
 	user.NewUserService(database)
 	short.NewShortService(database)
@@ -83,6 +93,7 @@ func Run() {
 	logInit()
 	database := dbConn()
 	gcsClient := gcsConn()
+	botClient := lineBotConn()
 	serviceBuild(database, gcsClient)
 
 	g := gin.Default()
@@ -90,6 +101,7 @@ func Run() {
 	router.NewUserRouter(g.Group("api/user"))
 	router.NewMediaRouter(g.Group("api/media"))
 	router.NewShortRouter(g.Group("api/short"))
+	router.NewLineRouter(g.Group("api/line"), botClient)
 	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	g.Run(":8888")
 }

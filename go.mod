@@ -11,6 +11,7 @@ require (
 	cloud.google.com/go/storage v1.28.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/line/line-bot-sdk-go/v7 v7.18.0
 	github.com/spf13/viper v1.14.0
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/swag v1.8.1
