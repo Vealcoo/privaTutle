@@ -179,7 +179,7 @@ func LineCallback(g *gin.Context) {
 						}
 						return
 					}
-					if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewFlexMessage("alt text", container)).Do(); err != nil {
+					if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewFlexMessage("關於我們", container)).Do(); err != nil {
 						return
 					}
 
