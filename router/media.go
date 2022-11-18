@@ -198,7 +198,7 @@ func UploadVideo(g *gin.Context) {
 
 // @Summary GetMedia
 // @Tags Media
-// @Accept  mpfd
+// @Accept  json
 // @produce json
 // @Param  Authorization  header  string  false  "Authorization"
 // @Param  short  path  string  true  "short"

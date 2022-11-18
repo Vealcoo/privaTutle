@@ -5,9 +5,9 @@ import (
 	_ "privaTutle/docs"
 )
 
-// @title Gin swagger
+// @title CutURL API
 // @version 1.0
-// @description Gin swagger
+// @description CutURL api server
 
 func main() {
 	privatutle.Run()

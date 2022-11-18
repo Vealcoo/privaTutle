@@ -113,7 +113,7 @@ const docTemplate = `{
         "/api/media/{short}": {
             "get": {
                 "consumes": [
-                    "multipart/form-data"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -287,6 +287,48 @@ const docTemplate = `{
             }
         },
         "/api/user/media/{shortId}": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "UpdateMedia",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.UpdateMediaInfo"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "shortId",
+                        "name": "shortId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
             "delete": {
                 "consumes": [
                     "application/json"
@@ -394,6 +436,48 @@ const docTemplate = `{
             }
         },
         "/api/user/short/{shortId}": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "UpdateShort",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.UpdateShortInfo"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "shortId",
+                        "name": "shortId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
             "delete": {
                 "consumes": [
                     "application/json"
@@ -497,6 +581,36 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "router.UpdateMediaInfo": {
+            "type": "object",
+            "required": [
+                "expirationTime"
+            ],
+            "properties": {
+                "expirationTime": {
+                    "type": "integer",
+                    "maximum": 86400,
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 15
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 10
+                }
+            }
+        },
+        "router.UpdateShortInfo": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 15
+                }
+            }
         }
     }
 }`
@@ -507,8 +621,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Gin swagger",
-	Description:      "Gin swagger",
+	Title:            "CutURL API",
+	Description:      "CutURL api server",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

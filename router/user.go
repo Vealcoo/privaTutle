@@ -23,9 +23,11 @@ func NewUserRouter(group *gin.RouterGroup) {
 
 	group.GET("/short/:page/:limit", ShortList)
 	group.DELETE("/short/:shortId", DeleteShort)
+	group.PUT("/short/:shortId", UpdateShort)
 
 	group.GET("/media/:page/:limit", MediaList)
 	group.DELETE("/media/:shortId", DeleteMedia)
+	group.PUT("/media/:shortId", UpdateMedia)
 }
 
 type RegisterInfo struct {
@@ -331,6 +333,136 @@ func DeleteMedia(g *gin.Context) {
 	if err != nil {
 		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
 		return
+	}
+
+	httpHelper.SendResponse(g, nil)
+}
+
+type UpdateShortInfo struct {
+	Name string `validate:"max=15"`
+}
+
+// @Summary UpdateShort
+// @Tags User
+// @Accept  json
+// @produce json
+// @Param  Authorization  header  string  true  "Authorization"
+// @Param  body  body  UpdateShortInfo  true  "body"
+// @Param  shortId  path  string  true  "shortId"
+// @Success 200
+// @Router /api/user/short/{shortId} [put]
+func UpdateShort(g *gin.Context) {
+	token := g.Request.Header.Get("Authorization")
+	objectId, err := auth.AuthJWT(token)
+	if err != nil {
+		if err == auth.ErrVaild {
+			httpHelper.SendError(g, http.StatusUnauthorized, err.Error())
+			return
+		}
+		httpHelper.SendError(g, http.StatusInternalServerError, model.ErrInternal.Error())
+		return
+	}
+
+	info := UpdateShortInfo{}
+	g.BindJSON(&info)
+	shortId := g.Param("shortId")
+	if shortId == "" {
+		httpHelper.SendError(g, http.StatusBadRequest, model.ErrParameter.Error())
+		return
+	}
+
+	validate := validator.New()
+	err = validate.Struct(info)
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, model.ErrParameter.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if info.Name != "" {
+		_, err = short.ShortService.UpdateShortName(ctx, objectId, shortId, info.Name)
+	}
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
+		return
+
+	}
+
+	httpHelper.SendResponse(g, nil)
+}
+
+type UpdateMediaInfo struct {
+	Name           string `validate:"max=15"`
+	ExpirationTime int64  `validate:"required,gte=1,lte=86400"`
+	Password       string `validate:"max=10"`
+}
+
+// @Summary UpdateMedia
+// @Tags User
+// @Accept  json
+// @produce json
+// @Param  Authorization  header  string  true  "Authorization"
+// @Param  body  body  UpdateMediaInfo  true  "body"
+// @Param  shortId  path  string  true  "shortId"
+// @Success 200
+// @Router /api/user/media/{shortId} [put]
+func UpdateMedia(g *gin.Context) {
+	token := g.Request.Header.Get("Authorization")
+	objectId, err := auth.AuthJWT(token)
+	if err != nil {
+		if err == auth.ErrVaild {
+			httpHelper.SendError(g, http.StatusUnauthorized, err.Error())
+			return
+		}
+		httpHelper.SendError(g, http.StatusInternalServerError, model.ErrInternal.Error())
+		return
+	}
+
+	info := UpdateMediaInfo{}
+	g.BindJSON(&info)
+	shortId := g.Param("shortId")
+	if shortId == "" {
+		httpHelper.SendError(g, http.StatusBadRequest, model.ErrParameter.Error())
+		return
+	}
+
+	validate := validator.New()
+	err = validate.Struct(info)
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, model.ErrParameter.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if info.Name != "" {
+		_, err = media.MediaService.UpdateMediaName(ctx, objectId, shortId, info.Name)
+	}
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
+		return
+
+	}
+
+	if info.ExpirationTime != 0 {
+		_, err = media.MediaService.UpdateMediaExpirationTime(ctx, objectId, shortId, info.ExpirationTime)
+	}
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
+		return
+
+	}
+
+	if info.Password != "" {
+		_, err = media.MediaService.UpdateMediaPassword(ctx, objectId, shortId, info.Password)
+	}
+	if err != nil {
+		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
+		return
+
 	}
 
 	httpHelper.SendResponse(g, nil)
