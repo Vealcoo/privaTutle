@@ -17,7 +17,7 @@ import (
 )
 
 func NewShortRouter(group *gin.RouterGroup) {
-	group.POST("/", Short)
+	group.POST("", Short)
 	group.GET("/:short", GetShort)
 }
 
