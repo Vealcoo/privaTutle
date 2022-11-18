@@ -48,7 +48,7 @@ func LineCallback(g *gin.Context) {
 
 				switch input {
 				case "操作說明":
-					result := "歡迎使用本服務(・∀・)つ⑩\n\n輸入原網址即可獲得縮網址 !\n\n也可以輸入圖片或影片生成媒體縮網址(๑╹◡╹๑)\n\n*輸入 setTime:秒數\n設定媒體檔案可瀏覽時間，時間到期自動刪除\n\n*輸入 setPass:密碼\n設定媒體檔案瀏覽密碼\n僅輸入setPass:後面不填入密碼，即不設定瀏覽密碼\nNote:密碼限定十位以內的數字喔\n\nHave a nice day !"
+					result := "歡迎使用本服務(・∀・)つ⑩\n\n輸入原網址即可獲得縮網址 !\n\n也可以輸入圖片或影片生成媒體縮網址(๑╹◡╹๑)\n\n*輸入 setTime:秒數\n設定媒體檔案可瀏覽時間，時間到期自動刪除\n\n*輸入 setPass:密碼\n設定媒體檔案瀏覽密碼\n輸入 setPass:none，即不設定瀏覽密碼\nNote:密碼限定十位以內的數字\n\nHave a nice day !"
 
 					if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(result)).Do(); err != nil {
 						return
@@ -227,7 +227,7 @@ func LineCallback(g *gin.Context) {
 
 					case "setPass":
 						input = input[index+1:]
-						if input != "" {
+						if input != "none" {
 							_, err := strconv.ParseInt(input, 10, 64)
 							if err != nil {
 								if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無效的輸入(๑╹◡╹๑)")).Do(); err != nil {
@@ -320,8 +320,8 @@ func LineCallback(g *gin.Context) {
 						return
 					}
 				}
-
-				data, err := media.MediaService.CreateMedia(ctx, event.Source.UserID, "image", "", userSetting.ExpirationTime, buf.Bytes())
+				
+				data, err := media.MediaService.CreateMedia(ctx, event.Source.UserID, "image", userSetting.Password, userSetting.ExpirationTime, buf.Bytes())
 				if err != nil {
 					if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("發生未知錯誤∑(✘Д✘๑ )")).Do(); err != nil {
 						return
@@ -357,7 +357,7 @@ func LineCallback(g *gin.Context) {
 					return
 				}
 
-				data, err := media.MediaService.CreateMedia(ctx, event.Source.UserID, "video", "", userSetting.ExpirationTime, byte)
+				data, err := media.MediaService.CreateMedia(ctx, event.Source.UserID, "video", userSetting.Password, userSetting.ExpirationTime, byte)
 				if err != nil {
 					if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("發生未知錯誤∑(✘Д✘๑ )")).Do(); err != nil {
 						return

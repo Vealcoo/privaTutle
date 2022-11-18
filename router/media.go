@@ -103,10 +103,15 @@ func UploadImage(g *gin.Context) {
 		return
 	}
 
+	password := info.Password
+	if password == "" {
+		password = "none"
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	data, err := media.MediaService.CreateMedia(ctx, objectId, "image", info.Password, info.ExpirationTime, buf.Bytes())
+	data, err := media.MediaService.CreateMedia(ctx, objectId, "image", password, info.ExpirationTime, buf.Bytes())
 	if err != nil {
 		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
 		return
@@ -184,10 +189,15 @@ func UploadVideo(g *gin.Context) {
 		return
 	}
 
+	password := info.Password
+	if password == "" {
+		password = "none"
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	data, err := media.MediaService.CreateMedia(ctx, objectId, "video", info.Password, info.ExpirationTime, buf)
+	data, err := media.MediaService.CreateMedia(ctx, objectId, "video", password, info.ExpirationTime, buf)
 	if err != nil {
 		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
 		return
