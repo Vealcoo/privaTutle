@@ -23,9 +23,11 @@ import (
 )
 
 var lineClient *linebot.Client
+var domain string
 
-func NewLineRouter(group *gin.RouterGroup, bot *linebot.Client) {
+func NewLineRouter(group *gin.RouterGroup, bot *linebot.Client, host string) {
 	lineClient = bot
+	domain = host
 	group.POST("", LineCallback)
 }
 
@@ -279,7 +281,7 @@ func LineCallback(g *gin.Context) {
 							return
 						}
 
-						if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("網域/"+data.ShortUrl)).Do(); err != nil {
+						if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(domain+data.ShortUrl)).Do(); err != nil {
 							return
 						}
 
@@ -329,7 +331,7 @@ func LineCallback(g *gin.Context) {
 					return
 				}
 
-				if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("網域/"+data.ShortUrl)).Do(); err != nil {
+				if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(domain+data.ShortUrl)).Do(); err != nil {
 					return
 				}
 
@@ -365,7 +367,7 @@ func LineCallback(g *gin.Context) {
 					return
 				}
 
-				if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("網域/"+data.ShortUrl)).Do(); err != nil {
+				if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(domain+data.ShortUrl)).Do(); err != nil {
 					return
 				}
 

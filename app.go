@@ -101,7 +101,7 @@ func Run() {
 	router.NewUserRouter(g.Group("api/user"))
 	router.NewMediaRouter(g.Group("api/media"))
 	router.NewShortRouter(g.Group("api/short"))
-	router.NewLineRouter(g.Group("api/line"), botClient)
+	router.NewLineRouter(g.Group("api/line"), botClient, cnf.GetString("frontend.host"))
 	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	g.Run(":8888")
 }
