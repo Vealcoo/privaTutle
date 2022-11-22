@@ -20,14 +20,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"github.com/spf13/viper"
 )
 
 var lineClient *linebot.Client
-var domain string
+var domain, aboutUs string
 
-func NewLineRouter(group *gin.RouterGroup, bot *linebot.Client, host string) {
+func NewLineRouter(group *gin.RouterGroup, bot *linebot.Client, cnf *viper.Viper) {
 	lineClient = bot
-	domain = host
+	domain = cnf.GetString("frontend.host")
+	aboutUs = cnf.GetString("line.aboutUs")
 	group.POST("", LineCallback)
 }
 
@@ -71,107 +73,7 @@ func LineCallback(g *gin.Context) {
 					}
 
 				case "關於我們":
-					jsonData := []byte(`{
-  "type": "carousel",
-  "contents": [
-    {
-      "type": "bubble",
-      "size": "kilo",
-      "hero": {
-        "type": "image",
-        "url": "https://storage.googleapis.com/privatutle/Admin/1200x810.png",
-        "size": "full",
-        "aspectMode": "cover",
-        "aspectRatio": "1:1"
-      },
-      "body": {
-        "type": "box",
-        "layout": "vertical",
-        "contents": [
-          {
-            "type": "text",
-            "text": "關於我們",
-            "weight": "bold",
-            "size": "md",
-            "wrap": true,
-            "align": "start"
-          },
-          {
-            "type": "text",
-            "text": "我們是一群熱愛軟體開發的新技術社群工程師，如果喜歡我們所提供的服務歡迎左滑以加密貨幣支持我們 !",
-            "size": "sm",
-            "wrap": true
-          }
-        ],
-        "spacing": "sm",
-        "paddingAll": "13px"
-      }
-    },
-    {
-      "type": "bubble",
-      "size": "kilo",
-      "hero": {
-        "type": "image",
-        "url": "https://storage.googleapis.com/privatutle/Admin/trc20.jpg",
-        "size": "full",
-        "aspectMode": "cover",
-        "aspectRatio": "1:1"
-      },
-      "body": {
-        "type": "box",
-        "layout": "vertical",
-        "contents": [
-          {
-            "type": "text",
-            "text": "TRC20 地址",
-            "weight": "bold",
-            "size": "md",
-            "wrap": true
-          },
-          {
-            "type": "text",
-            "text": "TRC20 轉帳 USDT 不需要任何 Gas !",
-            "size": "sm",
-            "wrap": true
-          }
-        ],
-        "spacing": "sm",
-        "paddingAll": "13px"
-      }
-    },
-    {
-      "type": "bubble",
-      "size": "kilo",
-      "hero": {
-        "type": "image",
-        "url": "https://storage.googleapis.com/privatutle/Admin/eth20.jpg",
-        "size": "full",
-        "aspectMode": "cover",
-        "aspectRatio": "1:1"
-      },
-      "body": {
-        "type": "box",
-        "layout": "vertical",
-        "contents": [
-          {
-            "type": "text",
-            "text": "ERCC20 地址",
-            "weight": "bold",
-            "size": "md"
-          },
-          {
-            "type": "text",
-            "text": "支援所有乙太坊代幣，及乙太侧鏈 ( ex. BEP20, Cronos 等",
-            "size": "sm",
-			"wrap": true
-          }
-        ],
-        "spacing": "sm",
-        "paddingAll": "13px"
-      }
-    }
-  ]
-}`)
+					jsonData := []byte(aboutUs)
 
 					container, err := linebot.UnmarshalFlexMessageJSON(jsonData)
 					// err is returned if invalid JSON is given that cannot be unmarshalled
@@ -273,7 +175,7 @@ func LineCallback(g *gin.Context) {
 
 						shortUrl := hash.StringHash(info.LeadUrl)
 
-						data, err := short.ShortService.CreateShort(ctx, event.Source.UserID, strconv.FormatInt(int64(shortUrl), 10), info.LeadUrl)
+						data, err := short.ShortService.CreateShort(ctx, event.Source.UserID, shortUrl, info.LeadUrl)
 						if err != nil {
 							if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("發生未知錯誤∑(✘Д✘๑ )")).Do(); err != nil {
 								return
@@ -322,7 +224,7 @@ func LineCallback(g *gin.Context) {
 						return
 					}
 				}
-				
+
 				data, err := media.MediaService.CreateMedia(ctx, event.Source.UserID, "image", userSetting.Password, userSetting.ExpirationTime, buf.Bytes())
 				if err != nil {
 					if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("發生未知錯誤∑(✘Д✘๑ )")).Do(); err != nil {
