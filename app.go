@@ -20,7 +20,6 @@ import (
 )
 
 var cnf *viper.Viper
-fmt.Pr
 
 func configInit() {
 	cnf = viper.New()
