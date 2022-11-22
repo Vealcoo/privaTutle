@@ -7,7 +7,6 @@ import (
 	"privaTutle/pkg/hash"
 	httpHelper "privaTutle/pkg/http_helper"
 	"privaTutle/service/short"
-	"strconv"
 
 	"context"
 	"time"
@@ -64,7 +63,7 @@ func Short(g *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	data, err := short.ShortService.CreateShort(ctx, objectId, strconv.FormatInt(int64(shortUrl), 10), info.LeadUrl)
+	data, err := short.ShortService.CreateShort(ctx, objectId, shortUrl, info.LeadUrl)
 	if err != nil {
 		httpHelper.SendError(g, http.StatusBadRequest, err.Error())
 		return
