@@ -24,11 +24,12 @@ import (
 )
 
 var lineClient *linebot.Client
-var domain, aboutUs string
+var domain, intr, aboutUs string
 
 func NewLineRouter(group *gin.RouterGroup, bot *linebot.Client, cnf *viper.Viper) {
 	lineClient = bot
 	domain = cnf.GetString("frontend.host")
+	intr = cnf.GetString("line.intr")
 	aboutUs = cnf.GetString("line.aboutUs")
 	group.POST("", LineCallback)
 }
@@ -52,9 +53,17 @@ func LineCallback(g *gin.Context) {
 
 				switch input {
 				case "操作說明":
-					result := "歡迎使用本服務(・∀・)つ⑩\n\n輸入原網址即可獲得縮網址 !\n\n也可以輸入圖片或影片生成媒體縮網址(๑╹◡╹๑)\n\n*輸入 setTime:秒數\n設定媒體檔案可瀏覽時間，時間到期自動刪除\n\n*輸入 setPass:密碼\n設定媒體檔案瀏覽密碼\n輸入 setPass:none，即不設定瀏覽密碼\nNote:密碼限定十位以內的數字\n\nHave a nice day !"
+					jsonData := []byte(intr)
 
-					if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(result)).Do(); err != nil {
+					container, err := linebot.UnmarshalFlexMessageJSON(jsonData)
+					// err is returned if invalid JSON is given that cannot be unmarshalled
+					if err != nil {
+						if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("發生未知錯誤∑(✘Д✘๑ )")).Do(); err != nil {
+							return
+						}
+						return
+					}
+					if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewFlexMessage("操作說明", container)).Do(); err != nil {
 						return
 					}
 
@@ -98,7 +107,7 @@ func LineCallback(g *gin.Context) {
 					}
 
 					switch input[:index] {
-					case "setTime":
+					case "set time":
 						input = input[index+1:]
 						expirationTime, err := strconv.ParseInt(input, 10, 64)
 						if err != nil {
@@ -108,7 +117,7 @@ func LineCallback(g *gin.Context) {
 							return
 						}
 
-						if expirationTime <= 0 || expirationTime >= 86400 {
+						if expirationTime <= 0 || expirationTime > 604800 {
 							if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無效的輸入(๑╹◡╹๑)")).Do(); err != nil {
 								return
 							}
@@ -129,9 +138,9 @@ func LineCallback(g *gin.Context) {
 							return
 						}
 
-					case "setPass":
+					case "set pass":
 						input = input[index+1:]
-						if input != "none" {
+						if input != "none" && input != "today" {
 							_, err := strconv.ParseInt(input, 10, 64)
 							if err != nil {
 								if _, err = lineClient.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("無效的輸入(๑╹◡╹๑)")).Do(); err != nil {
@@ -139,6 +148,12 @@ func LineCallback(g *gin.Context) {
 								}
 								return
 							}
+						}
+
+						if input == "today" {
+							today := time.Now().Format("2006-01-02")
+							t := strings.Split(today, "-")
+							input = t[1] + t[2]
 						}
 
 						if len(input) > 10 {
